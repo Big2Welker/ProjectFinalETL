@@ -1,0 +1,31 @@
+# 1. Local secrets & environment variables (NEVER commit to GitHub)
+.env
+
+# 2. Python virtual environments & caches
+venv/
+env/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 3. Airflow runtime logs & local metadata
+logs/
+airflow.db
+airflow.cfg
+webserver_config.py
+
+# 4. Intermediate generated data (recreated automatically by the pipeline)
+data/prepared/
+data/raw/api/
+data/raw/primary/primary_manifest_*.json
+
+# 5. Power BI internal project folders (only commit final .pbix and HTML dashboard snapshots)
+*.pbip
+*.Report/
+*.SemanticModel/
+docs/dashboard/*.pbip
+docs/dashboard/*.Report/
+docs/dashboard/*.SemanticModel/
+src/build_dashboard_pbip.py
+notebooks/build_notebook.py

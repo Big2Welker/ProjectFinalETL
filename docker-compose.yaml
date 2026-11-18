@@ -1,0 +1,190 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: proyecto3_mysql_dw
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: airflow_meta
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_dw_final_data:/var/lib/mysql
+      - ./sql/create_dw.sql:/docker-entrypoint-initdb.d/01_create_dw.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: apache/kafka:4.4.0
+    container_name: proyecto3_kafka_broker
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  airflow-init:
+    image: apache/airflow:3.1.8-python3.10
+    container_name: proyecto3_airflow_init
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://root:${DB_PASSWORD:-root}@mysql:3306/airflow_meta
+      - AIRFLOW__CORE__FERNET_KEY=fLJTSG37YolLbAQFEV-3HNwxPV__tgTZcx8OjnJiEf8=
+      - AIRFLOW__API_AUTH__JWT_SECRET=jRbS5t7fnHyPWW6KayB-FLredqvQOozwNvOnjkHZ6h0=
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-mysql great_expectations pyarrow pymysql requests python-dotenv confluent-kafka
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+    restart: "no"
+
+  airflow-webserver:
+    image: apache/airflow:3.1.8-python3.10
+    container_name: proyecto3_airflow_webserver
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://root:${DB_PASSWORD:-root}@mysql:3306/airflow_meta
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL=http://airflow-webserver:8080/execution/
+      - AIRFLOW__CORE__FERNET_KEY=fLJTSG37YolLbAQFEV-3HNwxPV__tgTZcx8OjnJiEf8=
+      - AIRFLOW__API_AUTH__JWT_SECRET=jRbS5t7fnHyPWW6KayB-FLredqvQOozwNvOnjkHZ6h0=
+      - AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - ETL_PROJECT_ROOT=/opt/airflow
+      - PYTHONPATH=/opt/airflow
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - DB_NAME=${DB_NAME:-dw_calidad_agua_colombia}
+      - API_COLOMBIA_BASE_URL=https://api-colombia.com/api/v1
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - INJECT_CRITICAL_FAILURE=${INJECT_CRITICAL_FAILURE:-false}
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-mysql great_expectations pyarrow pymysql requests python-dotenv confluent-kafka
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+      - ./docs:/opt/airflow/docs
+      - ./src:/opt/airflow/src
+      - ./gx:/opt/airflow/gx
+      - ./sql:/opt/airflow/sql
+      - ./streaming:/opt/airflow/streaming
+    command: api-server
+    restart: always
+
+  airflow-scheduler:
+    image: apache/airflow:3.1.8-python3.10
+    container_name: proyecto3_airflow_scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://root:${DB_PASSWORD:-root}@mysql:3306/airflow_meta
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__EXECUTION_API_SERVER_URL=http://airflow-webserver:8080/execution/
+      - AIRFLOW__CORE__FERNET_KEY=fLJTSG37YolLbAQFEV-3HNwxPV__tgTZcx8OjnJiEf8=
+      - AIRFLOW__API_AUTH__JWT_SECRET=jRbS5t7fnHyPWW6KayB-FLredqvQOozwNvOnjkHZ6h0=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - ETL_PROJECT_ROOT=/opt/airflow
+      - PYTHONPATH=/opt/airflow
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - DB_NAME=${DB_NAME:-dw_calidad_agua_colombia}
+      - API_COLOMBIA_BASE_URL=https://api-colombia.com/api/v1
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - INJECT_CRITICAL_FAILURE=${INJECT_CRITICAL_FAILURE:-false}
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-mysql great_expectations pyarrow pymysql requests python-dotenv confluent-kafka
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+      - ./docs:/opt/airflow/docs
+      - ./src:/opt/airflow/src
+      - ./gx:/opt/airflow/gx
+      - ./sql:/opt/airflow/sql
+      - ./streaming:/opt/airflow/streaming
+    command: scheduler
+    restart: always
+
+  airflow-dag-processor:
+    image: apache/airflow:3.1.8-python3.10
+    container_name: proyecto3_airflow_dag_processor
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://root:${DB_PASSWORD:-root}@mysql:3306/airflow_meta
+      - AIRFLOW__CORE__FERNET_KEY=fLJTSG37YolLbAQFEV-3HNwxPV__tgTZcx8OjnJiEf8=
+      - AIRFLOW__API_AUTH__JWT_SECRET=jRbS5t7fnHyPWW6KayB-FLredqvQOozwNvOnjkHZ6h0=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - ETL_PROJECT_ROOT=/opt/airflow
+      - PYTHONPATH=/opt/airflow
+      - _PIP_ADDITIONAL_REQUIREMENTS=apache-airflow-providers-mysql great_expectations pyarrow pymysql requests python-dotenv confluent-kafka
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+      - ./docs:/opt/airflow/docs
+      - ./src:/opt/airflow/src
+      - ./gx:/opt/airflow/gx
+      - ./sql:/opt/airflow/sql
+      - ./streaming:/opt/airflow/streaming
+    command: dag-processor
+    restart: always
+
+  realtime-dashboard:
+    image: python:3.10-slim
+    container_name: proyecto3_realtime_dashboard
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    working_dir: /app
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - DB_NAME=${DB_NAME:-dw_calidad_agua_colombia}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./:/app
+    command: >
+      bash -c "pip install --no-cache-dir pymysql python-dotenv confluent-kafka &&
+               python streaming/realtime_dashboard.py --port 8050"
+    restart: always
+
+volumes:
+  mysql_dw_final_data:

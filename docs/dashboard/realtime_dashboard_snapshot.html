@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Streaming Dashboard · Kafka + MySQL (ODS 6 IRCA Colombia)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0F1117;
+      --card: #171A24;
+      --card-alt: #1E2330;
+      --border: #2C3347;
+      --text: #F8FAFC;
+      --muted: #94A3B8;
+      --ruby: #F54651;
+      --peach: #F2A7A0;
+      --cyan: #38BDF8;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --purple: #A855F7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+      padding: 18px 26px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .title-wrap h1 {
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .live-dot {
+      width: 11px;
+      height: 11px;
+      background: var(--emerald);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 12px var(--emerald);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.65; }
+    }
+    .subtitle { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .actions { display: flex; gap: 10px; align-items: center; }
+    .btn {
+      background: var(--card-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:hover { border-color: var(--cyan); }
+    .btn-ruby { background: var(--ruby); border-color: var(--ruby); color: #fff; }
+    .btn-ruby:hover { background: #dc2626; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--ruby);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .kpi-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+    .kpi-val { font-size: 24px; font-weight: 900; margin-top: 4px; }
+    .kpi-sub { font-size: 11px; color: var(--peach); margin-top: 3px; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .panel-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .chart-container { height: 230px; position: relative; }
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 14px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    th {
+      text-align: left;
+      padding: 7px 8px;
+      background: var(--card-alt);
+      color: var(--peach);
+      border-bottom: 2px solid var(--ruby);
+    }
+    td { padding: 6px 8px; border-bottom: 1px solid var(--border); color: #E2E8F0; }
+  </style>
+<script>window.__STATIC_SNAPSHOT_DATA__ = {"captured_at_utc": "2026-11-18T00:21:58.501077+00:00", "kpi_snapshot": {"metric_snapshot_id": 120, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00", "total_valid_events": 120, "total_rejected_events": 3, "rolling_avg_irca_general": 34.62, "rolling_avg_irca_rural": 59.79, "critical_alerts_count": 90, "inviable_sanitaria_count": 4, "indigenous_municipalities_alert_count": 22, "indigenous_rolling_avg_irca": 50.58, "non_indigenous_rolling_avg_irca": 46.98, "indigenous_gap_pts": 3.6, "last_event_municipio": "CALIMA", "last_event_departamento": "VALLE DEL CAUCA", "last_event_irca": 29.9, "last_event_riesgo": "RIESGO MEDIO"}, "regional_metrics": [{"region_geografica": "CARIBE", "events_processed": 36, "avg_irca_general": 52.76, "avg_irca_rural": 58.95, "max_irca_recorded": 89.8, "critical_alerts_count": 32, "indigenous_alerts_count": 1, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00"}, {"region_geografica": "AMAZONÍA", "events_processed": 9, "avg_irca_general": 50.62, "avg_irca_rural": 45.07, "max_irca_recorded": 96.6, "critical_alerts_count": 7, "indigenous_alerts_count": 6, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00"}, {"region_geografica": "ORINOQUÍA", "events_processed": 4, "avg_irca_general": 49.0, "avg_irca_rural": null, "max_irca_recorded": 61.0, "critical_alerts_count": 3, "indigenous_alerts_count": 2, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00"}, {"region_geografica": "PACÍFICO", "events_processed": 27, "avg_irca_general": 46.78, "avg_irca_rural": 54.34, "max_irca_recorded": 84.6, "critical_alerts_count": 21, "indigenous_alerts_count": 9, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00"}, {"region_geografica": "ANDINA", "events_processed": 44, "avg_irca_general": 43.58, "avg_irca_rural": 71.88, "max_irca_recorded": 89.4, "critical_alerts_count": 27, "indigenous_alerts_count": 4, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00"}], "recent_events": [{"event_id": "17484d23-47f7-4f0f-aeee-5bb6a81a7f13", "event_timestamp": "2026-11-18T00:21:50.822911+00:00", "codigo_municipio": "76126", "municipio": "CALIMA", "departamento": "VALLE DEL CAUCA", "region_geografica": "PACÍFICO", "irca_general": 29.9, "irca_rural": 48.6, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 1, "total_resguardos_indigenas": 1, "kafka_partition": 2, "kafka_offset": 74}, {"event_id": "11dc7a16-9688-4199-8083-de31b92c43f7", "event_timestamp": "2026-11-18T00:21:50.783555+00:00", "codigo_municipio": "15224", "municipio": "CUCAITA", "departamento": "BOYACÁ", "region_geografica": "ANDINA", "irca_general": 31.2, "irca_rural": 26.4, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 73}, {"event_id": "5007e273-cec9-4d26-aa9c-07f3341de1ea", "event_timestamp": "2026-11-18T00:21:50.778033+00:00", "codigo_municipio": "5240", "municipio": "EBÉJICO", "departamento": "ANTIOQUIA", "region_geografica": "ANDINA", "irca_general": 31.4, "irca_rural": 79.2, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 72}, {"event_id": "4e746021-7439-4dff-bb87-4b6e3d24816a", "event_timestamp": "2026-11-18T00:21:50.766729+00:00", "codigo_municipio": "68147", "municipio": "CAPITANEJO", "departamento": "SANTANDER", "region_geografica": "ANDINA", "irca_general": 31.7, "irca_rural": null, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 71}, {"event_id": "22ddd9fe-a7e5-4bec-9827-4d8a1a469ed6", "event_timestamp": "2026-11-18T00:21:50.750149+00:00", "codigo_municipio": "52356", "municipio": "IPIALES", "departamento": "NARIÑO", "region_geografica": "PACÍFICO", "irca_general": 31.9, "irca_rural": 60.6, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 1, "total_resguardos_indigenas": 5, "kafka_partition": 2, "kafka_offset": 70}, {"event_id": "d5610a35-041b-4ecd-a80f-019dc8947f61", "event_timestamp": "2026-11-18T00:21:50.739028+00:00", "codigo_municipio": "15810", "municipio": "TIPACOQUE", "departamento": "BOYACÁ", "region_geografica": "ANDINA", "irca_general": 32.2, "irca_rural": 66.8, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 69}, {"event_id": "bacac662-e5b0-43f0-b979-cbd5431fd787", "event_timestamp": "2026-11-18T00:21:50.733647+00:00", "codigo_municipio": "5809", "municipio": "TITIRIBÍ", "departamento": "ANTIOQUIA", "region_geografica": "ANDINA", "irca_general": 32.3, "irca_rural": 78.0, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 68}, {"event_id": "908f057b-48e5-46a6-b909-f4592ab7c075", "event_timestamp": "2026-11-18T00:21:50.727549+00:00", "codigo_municipio": "18785", "municipio": "SOLITA", "departamento": "CAQUETÁ", "region_geografica": "AMAZONÍA", "irca_general": 33.0, "irca_rural": 42.0, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 67}, {"event_id": "0c674de8-0b89-4e7c-8c06-aa7ece11d34c", "event_timestamp": "2026-11-18T00:21:50.716220+00:00", "codigo_municipio": "68250", "municipio": "EL PEÑÓN", "departamento": "SANTANDER", "region_geografica": "ANDINA", "irca_general": 33.7, "irca_rural": null, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 66}, {"event_id": "d41010e9-4c2b-421e-8e99-7dfba88e0eee", "event_timestamp": "2026-11-18T00:21:50.710494+00:00", "codigo_municipio": "15212", "municipio": "COPER", "departamento": "BOYACÁ", "region_geografica": "ANDINA", "irca_general": 33.8, "irca_rural": 71.7, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 65}, {"event_id": "2c4681b7-9856-41f1-9c81-d5641e8fa3af", "event_timestamp": "2026-11-18T00:21:50.682575+00:00", "codigo_municipio": "15480", "municipio": "MUZO", "departamento": "BOYACÁ", "region_geografica": "ANDINA", "irca_general": 34.7, "irca_rural": 77.5, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO MEDIO", "tiene_resguardo_indigena": 0, "total_resguardos_indigenas": 0, "kafka_partition": 2, "kafka_offset": 64}, {"event_id": "6be0ec5b-3234-447e-9267-6cacec039b0b", "event_timestamp": "2026-11-18T00:21:50.670729+00:00", "codigo_municipio": "97001", "municipio": "MITÚ", "departamento": "VAUPÉS", "region_geografica": "AMAZONÍA", "irca_general": 35.1, "irca_rural": null, "delta_irca_prev": 0.0, "nivel_riesgo": "RIESGO ALTO", "tiene_resguardo_indigena": 1, "total_resguardos_indigenas": 2, "kafka_partition": 2, "kafka_offset": 63}], "dlq_invalid_events": [{"dlq_id": 1, "rejected_at_utc": "2026-11-18T00:21:44.203646+00:00", "event_id": "fa650fcf-64eb-4e0f-a988-0a7772d9b513", "event_key": "27073", "violation_code": "DOMAIN_VIOLATION_IRCA_RANGE", "violation_detail": "irca_general=165.0 violates physical range [0.0, 100.0].", "raw_payload": "{\"event_id\": \"fa650fcf-64eb-4e0f-a988-0a7772d9b513\", \"event_timestamp\": \"2026-11-18T00:21:44.027816+00:00\", \"event_key\": \"27073\", \"event_type\": \"CRITICAL_RISK_SPIKE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": \"27073\", \"municipio\": \"BAGAD\\u00d3\", \"departamento\": \"CHOC\\u00d3\", \"region_geografica\": \"PAC\\u00cdFICO\", \"anio_referencia\": 2024, \"irca_general\": 165.0, \"irca_urbano\": 85.0, \"irca_rural\": 100.0, \"delta_irca_prev\": 65.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 553519}", "kafka_partition": 1, "kafka_offset": 57}, {"dlq_id": 2, "rejected_at_utc": "2026-11-18T00:21:44.217916+00:00", "event_id": "8a124e9e-760d-4329-9fbb-6e54158872f3", "event_key": "05895", "violation_code": "MISSING_REQUIRED_FIELD", "violation_detail": "Required field 'codigo_municipio' is missing or null.", "raw_payload": "{\"event_id\": \"8a124e9e-760d-4329-9fbb-6e54158872f3\", \"event_timestamp\": \"2026-11-18T00:21:44.071670+00:00\", \"event_key\": \"05895\", \"event_type\": \"DELTA_METRIC_UPDATE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": null, \"municipio\": \"ZARAGOZA\", \"departamento\": \"ANTIOQUIA\", \"region_geografica\": \"ANDINA\", \"anio_referencia\": 2024, \"irca_general\": 96.5, \"delta_irca_prev\": 12.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 6887306}", "kafka_partition": 1, "kafka_offset": 58}, {"dlq_id": 3, "rejected_at_utc": "2026-11-18T00:21:44.226342+00:00", "event_id": null, "event_key": null, "violation_code": "MALFORMED_JSON_PAYLOAD", "violation_detail": "Failed to decode JSON payload: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)", "raw_payload": "{corrupt_json_payload: irca_general=NaN, broken_syntax", "kafka_partition": 2, "kafka_offset": 53}], "metrics_history": [{"metric_snapshot_id": 96, "updated_at_utc": "2026-11-18T00:21:51.391661+00:00", "total_valid_events": 96, "rolling_avg_irca_general": 39.77, "rolling_avg_irca_rural": 61.08, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 50.52, "critical_alerts_count": 82}, {"metric_snapshot_id": 97, "updated_at_utc": "2026-11-18T00:21:51.407643+00:00", "total_valid_events": 97, "rolling_avg_irca_general": 39.46, "rolling_avg_irca_rural": 61.08, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 50.3, "critical_alerts_count": 82}, {"metric_snapshot_id": 98, "updated_at_utc": "2026-11-18T00:21:51.420993+00:00", "total_valid_events": 98, "rolling_avg_irca_general": 39.1, "rolling_avg_irca_rural": 60.07, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 50.04, "critical_alerts_count": 82}, {"metric_snapshot_id": 99, "updated_at_utc": "2026-11-18T00:21:51.434536+00:00", "total_valid_events": 99, "rolling_avg_irca_general": 38.73, "rolling_avg_irca_rural": 58.52, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 49.79, "critical_alerts_count": 82}, {"metric_snapshot_id": 100, "updated_at_utc": "2026-11-18T00:21:51.450790+00:00", "total_valid_events": 100, "rolling_avg_irca_general": 38.36, "rolling_avg_irca_rural": 58.87, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 49.53, "critical_alerts_count": 82}, {"metric_snapshot_id": 101, "updated_at_utc": "2026-11-18T00:21:51.465401+00:00", "total_valid_events": 101, "rolling_avg_irca_general": 37.99, "rolling_avg_irca_rural": 57.96, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 49.28, "critical_alerts_count": 82}, {"metric_snapshot_id": 102, "updated_at_utc": "2026-11-18T00:21:51.481039+00:00", "total_valid_events": 102, "rolling_avg_irca_general": 37.88, "rolling_avg_irca_rural": 58.45, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 49.19, "critical_alerts_count": 83}, {"metric_snapshot_id": 103, "updated_at_utc": "2026-11-18T00:21:51.495284+00:00", "total_valid_events": 103, "rolling_avg_irca_general": 37.75, "rolling_avg_irca_rural": 58.79, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 49.09, "critical_alerts_count": 84}, {"metric_snapshot_id": 104, "updated_at_utc": "2026-11-18T00:21:51.510084+00:00", "total_valid_events": 104, "rolling_avg_irca_general": 37.61, "rolling_avg_irca_rural": 58.47, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 48.98, "critical_alerts_count": 85}, {"metric_snapshot_id": 105, "updated_at_utc": "2026-11-18T00:21:51.523779+00:00", "total_valid_events": 105, "rolling_avg_irca_general": 37.46, "rolling_avg_irca_rural": 59.35, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 48.87, "critical_alerts_count": 86}, {"metric_snapshot_id": 106, "updated_at_utc": "2026-11-18T00:21:51.538852+00:00", "total_valid_events": 106, "rolling_avg_irca_general": 37.29, "rolling_avg_irca_rural": 59.35, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 48.75, "critical_alerts_count": 87}, {"metric_snapshot_id": 107, "updated_at_utc": "2026-11-18T00:21:51.552937+00:00", "total_valid_events": 107, "rolling_avg_irca_general": 37.12, "rolling_avg_irca_rural": 59.61, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 48.63, "critical_alerts_count": 88}, {"metric_snapshot_id": 108, "updated_at_utc": "2026-11-18T00:21:51.566513+00:00", "total_valid_events": 108, "rolling_avg_irca_general": 36.94, "rolling_avg_irca_rural": 58.36, "indigenous_rolling_avg_irca": 52.97, "non_indigenous_rolling_avg_irca": 48.5, "critical_alerts_count": 89}, {"metric_snapshot_id": 109, "updated_at_utc": "2026-11-18T00:21:51.580200+00:00", "total_valid_events": 109, "rolling_avg_irca_general": 36.72, "rolling_avg_irca_rural": 58.36, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 48.5, "critical_alerts_count": 90}, {"metric_snapshot_id": 110, "updated_at_utc": "2026-11-18T00:21:51.593914+00:00", "total_valid_events": 110, "rolling_avg_irca_general": 36.5, "rolling_avg_irca_rural": 59.02, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 48.34, "critical_alerts_count": 90}, {"metric_snapshot_id": 111, "updated_at_utc": "2026-11-18T00:21:51.608439+00:00", "total_valid_events": 111, "rolling_avg_irca_general": 36.28, "rolling_avg_irca_rural": 59.77, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 48.17, "critical_alerts_count": 90}, {"metric_snapshot_id": 112, "updated_at_utc": "2026-11-18T00:21:51.622948+00:00", "total_valid_events": 112, "rolling_avg_irca_general": 36.08, "rolling_avg_irca_rural": 59.12, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 48.01, "critical_alerts_count": 90}, {"metric_snapshot_id": 113, "updated_at_utc": "2026-11-18T00:21:51.635993+00:00", "total_valid_events": 113, "rolling_avg_irca_general": 35.87, "rolling_avg_irca_rural": 57.66, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 47.84, "critical_alerts_count": 90}, {"metric_snapshot_id": 114, "updated_at_utc": "2026-11-18T00:21:51.649659+00:00", "total_valid_events": 114, "rolling_avg_irca_general": 35.65, "rolling_avg_irca_rural": 58.82, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 47.66, "critical_alerts_count": 90}, {"metric_snapshot_id": 115, "updated_at_utc": "2026-11-18T00:21:51.667885+00:00", "total_valid_events": 115, "rolling_avg_irca_general": 35.44, "rolling_avg_irca_rural": 59.09, "indigenous_rolling_avg_irca": 52.22, "non_indigenous_rolling_avg_irca": 47.49, "critical_alerts_count": 90}, {"metric_snapshot_id": 116, "updated_at_utc": "2026-11-18T00:21:51.686924+00:00", "total_valid_events": 116, "rolling_avg_irca_general": 35.22, "rolling_avg_irca_rural": 59.23, "indigenous_rolling_avg_irca": 51.41, "non_indigenous_rolling_avg_irca": 47.49, "critical_alerts_count": 90}, {"metric_snapshot_id": 117, "updated_at_utc": "2026-11-18T00:21:51.704112+00:00", "total_valid_events": 117, "rolling_avg_irca_general": 35.07, "rolling_avg_irca_rural": 58.73, "indigenous_rolling_avg_irca": 51.41, "non_indigenous_rolling_avg_irca": 47.32, "critical_alerts_count": 90}, {"metric_snapshot_id": 118, "updated_at_utc": "2026-11-18T00:21:51.720566+00:00", "total_valid_events": 118, "rolling_avg_irca_general": 34.92, "rolling_avg_irca_rural": 60.22, "indigenous_rolling_avg_irca": 51.41, "non_indigenous_rolling_avg_irca": 47.15, "critical_alerts_count": 90}, {"metric_snapshot_id": 119, "updated_at_utc": "2026-11-18T00:21:51.735090+00:00", "total_valid_events": 119, "rolling_avg_irca_general": 34.77, "rolling_avg_irca_rural": 58.77, "indigenous_rolling_avg_irca": 51.41, "non_indigenous_rolling_avg_irca": 46.98, "critical_alerts_count": 90}, {"metric_snapshot_id": 120, "updated_at_utc": "2026-11-18T00:21:51.750041+00:00", "total_valid_events": 120, "rolling_avg_irca_general": 34.62, "rolling_avg_irca_rural": 59.79, "indigenous_rolling_avg_irca": 50.58, "non_indigenous_rolling_avg_irca": 46.98, "critical_alerts_count": 90}]};</script>
+</head>
+<body>
+  <div class="header">
+    <div class="title-wrap">
+      <h1>
+        <span class="live-dot"></span>
+        Real-Time Water Quality (IRCA) Streaming Dashboard · Apache Kafka → MySQL Store
+      </h1>
+      <div class="subtitle">
+        Topic: <code>irca.water.telemetry.v1</code> · Auto-Refresh: <strong>Every 2.0s</strong> ·
+        Last Update: <span id="lastUpdate">Cargando...</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ruby" onclick="triggerWave()">⚡ Publicar Nueva Ola en Kafka (+15 Eventos)</button>
+      <button class="btn" onclick="triggerInvalid()">🛑 Inyectar Evento Corrupto (Probar DLQ)</button>
+    </div>
+  </div>
+
+  <!-- 6 Live Streaming Metrics KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi" style="border-top-color: var(--emerald);">
+      <div class="kpi-label">Métrica S1A · Eventos Válidos</div>
+      <div class="kpi-val" id="kpiValid" style="color: var(--emerald);">0</div>
+      <div class="kpi-sub" id="kpiLastMpio">Último: -</div>
+    </div>
+    <div class="kpi" style="border-top-color: var(--ruby);">
+      <div class="kpi-label">Métrica S1B · Rolling IRCA (50 ev)</div>
+      <div class="kpi-val" id="kpiRollingGen" style="color: var(--ruby);">0.00%</div>
+      <div class="kpi-sub" id="kpiRollingRur">Rural Rolling: 0.00%</div>
+    </div>
+    <div class="kpi" style="border-top-color: var(--amber);">
+      <div class="kpi-label">Métrica S2 · Alertas Críticas (&gt;35%)</div>
+      <div class="kpi-val" id="kpiCritAlerts" style="color: var(--amber);">0</div>
+      <div class="kpi-sub" id="kpiInviable">Inviable Sanitaria (&gt;80%): 0</div>
+    </div>
+    <div class="kpi" style="border-top-color: var(--cyan);">
+      <div class="kpi-label">Métrica S3A · IRCA Territorios Indígenas</div>
+      <div class="kpi-val" id="kpiIndAvg" style="color: var(--cyan);">0.00%</div>
+      <div class="kpi-sub" id="kpiIndAlerts">Alertas en Resguardos: 0</div>
+    </div>
+    <div class="kpi" style="border-top-color: var(--purple);">
+      <div class="kpi-label">Métrica S3B · Brecha Indígena Live</div>
+      <div class="kpi-val" id="kpiIndGap" style="color: var(--purple);">+0.00 pts</div>
+      <div class="kpi-sub" id="kpiNonIndAvg">Sin Resguardo: 0.00%</div>
+    </div>
+    <div class="kpi" style="border-top-color: #EF4444;">
+      <div class="kpi-label">Contrato · Eventos Rechazados (DLQ)</div>
+      <div class="kpi-val" id="kpiRejected" style="color: #EF4444;">0</div>
+      <div class="kpi-sub">Bloqueados por Event Contract</div>
+    </div>
+  </div>
+
+  <!-- 3 Real-Time Streaming Charts -->
+  <div class="charts-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <span>📈 Evolución en Tiempo Real del Rolling IRCA (General, Rural e Indígena)</span>
+        <span class="badge">Ventana Deslizante (S1)</span>
+      </div>
+      <div class="chart-container"><canvas id="chartStreamLine"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <span>🗺️ Métrica S4 · Riesgo Promedio en Vivo por Región Natural</span>
+        <span class="badge">stream_regional_metrics</span>
+      </div>
+      <div class="chart-container"><canvas id="chartRegionBar"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <span>⛺ Métrica S3 · Comparativa Live Con vs. Sin Resguardo Indígena</span>
+        <span class="badge">API + Stream</span>
+      </div>
+      <div class="chart-container"><canvas id="chartIndBar"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 2 Live Tables: Recent Validated Stream Events & Dead-Letter Queue (DLQ) -->
+  <div class="tables-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <span>📡 Últimos Eventos Procesados por el Kafka Consumer (stream_events_log)</span>
+        <span class="badge">Key: codigo_municipio</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Offset</th>
+            <th>Mpio (Cód)</th>
+            <th>Depto / Región</th>
+            <th>IRCA (%)</th>
+            <th>Δ Previo</th>
+            <th>Resguardos</th>
+            <th>Nivel de Riesgo</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyEvents"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <span>🛡️ Dead-Letter Queue: Eventos Inválidos Rechazados (stream_dlq_invalid_events)</span>
+        <span class="badge" style="color:var(--ruby); border-color:var(--ruby);">Contract Enforcement</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Código Violación</th>
+            <th>Detalle del Contrato</th>
+            <th>Part/Offset</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyDlq"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    Chart.defaults.color = '#94A3B8';
+    Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.15)';
+
+    const lineChart = new Chart(document.getElementById('chartStreamLine'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Rolling IRCA General (%)', data: [], borderColor: '#F54651', borderWidth: 2.5, tension: 0.3 },
+          { label: 'Rolling IRCA Rural (%)', data: [], borderColor: '#F2A7A0', borderWidth: 2, tension: 0.3 },
+          { label: 'IRCA Municipios Indígenas (%)', data: [], borderColor: '#38BDF8', borderWidth: 2, tension: 0.3 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, animation: false }
+    });
+
+    const regionChart = new Chart(document.getElementById('chartRegionBar'), {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'IRCA Promedio Live (%)', data: [], backgroundColor: '#F54651', borderRadius: 4 },
+          { label: 'Alertas Críticas (>35%)', data: [], backgroundColor: '#F59E0B', borderRadius: 4 }
+        ]
+      },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false }
+    });
+
+    const indChart = new Chart(document.getElementById('chartIndBar'), {
+      type: 'bar',
+      data: {
+        labels: ['Con Resguardo Indígena', 'Sin Resguardo Indígena'],
+        datasets: [{
+          label: 'IRCA Promedio en Streaming (%)',
+          data: [0, 0],
+          backgroundColor: ['#F54651', '#38BDF8'],
+          borderRadius: 6
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { beginAtZero: true } } }
+    });
+
+    function renderDashboard(data) {
+      const k = data.kpi_snapshot || {};
+      document.getElementById('lastUpdate').textContent = k.updated_at_utc || data.captured_at_utc || '-';
+      document.getElementById('kpiValid').textContent = k.total_valid_events || 0;
+      document.getElementById('kpiLastMpio').textContent = `Último: ${k.last_event_municipio || '-'} (${k.last_event_irca || 0}%)`;
+      document.getElementById('kpiRollingGen').textContent = `${(k.rolling_avg_irca_general || 0).toFixed(2)}%`;
+      document.getElementById('kpiRollingRur').textContent = `Rural Rolling: ${(k.rolling_avg_irca_rural || 0).toFixed(2)}%`;
+      document.getElementById('kpiCritAlerts').textContent = k.critical_alerts_count || 0;
+      document.getElementById('kpiInviable').textContent = `Inviable Sanitaria (>80%): ${k.inviable_sanitaria_count || 0}`;
+      document.getElementById('kpiIndAvg').textContent = `${(k.indigenous_rolling_avg_irca || 0).toFixed(2)}%`;
+      document.getElementById('kpiIndAlerts').textContent = `Alertas en Resguardos: ${k.indigenous_municipalities_alert_count || 0}`;
+      const gap = k.indigenous_gap_pts || 0;
+      document.getElementById('kpiIndGap').textContent = `${gap >= 0 ? '+' : ''}${gap.toFixed(2)} pts`;
+      document.getElementById('kpiNonIndAvg').textContent = `Sin Resguardo: ${(k.non_indigenous_rolling_avg_irca || 0).toFixed(2)}%`;
+      document.getElementById('kpiRejected').textContent = k.total_rejected_events || 0;
+
+      // Update Line Chart
+      const hist = data.metrics_history || [];
+      lineChart.data.labels = hist.map(h => `Ev #${h.total_valid_events}`);
+      lineChart.data.datasets[0].data = hist.map(h => h.rolling_avg_irca_general);
+      lineChart.data.datasets[1].data = hist.map(h => h.rolling_avg_irca_rural);
+      lineChart.data.datasets[2].data = hist.map(h => h.indigenous_rolling_avg_irca);
+      lineChart.update();
+
+      // Update Region Chart
+      const regs = data.regional_metrics || [];
+      regionChart.data.labels = regs.map(r => r.region_geografica);
+      regionChart.data.datasets[0].data = regs.map(r => r.avg_irca_general);
+      regionChart.data.datasets[1].data = regs.map(r => r.critical_alerts_count);
+      regionChart.update();
+
+      // Update Indigenous Chart
+      indChart.data.datasets[0].data = [k.indigenous_rolling_avg_irca || 0, k.non_indigenous_rolling_avg_irca || 0];
+      indChart.update();
+
+      // Update Events Table
+      const evs = data.recent_events || [];
+      document.getElementById('tbodyEvents').innerHTML = evs.slice(0, 8).map(e => `
+        <tr>
+          <td>P${e.kafka_partition}:${e.kafka_offset}</td>
+          <td><strong>${e.municipio}</strong> (${e.codigo_municipio})</td>
+          <td>${e.departamento} · <span style="color:#38BDF8">${e.region_geografica}</span></td>
+          <td style="color:${e.irca_general > 35 ? '#F54651' : '#10B981'}; font-weight:700;">${Number(e.irca_general).toFixed(2)}%</td>
+          <td>${Number(e.delta_irca_prev) >= 0 ? '+' : ''}${Number(e.delta_irca_prev).toFixed(2)}</td>
+          <td>${e.tiene_resguardo_indigena ? '⛺ Sí (' + e.total_resguardos_indigenas + ')' : 'No'}</td>
+          <td>${e.nivel_riesgo}</td>
+        </tr>
+      `).join('');
+
+      // Update DLQ Table
+      const dlq = data.dlq_invalid_events || [];
+      document.getElementById('tbodyDlq').innerHTML = dlq.slice(-6).reverse().map(d => `
+        <tr>
+          <td>#${d.dlq_id}</td>
+          <td style="color:#F54651; font-weight:700;">${d.violation_code}</td>
+          <td>${d.violation_detail}</td>
+          <td>P${d.kafka_partition}:${d.kafka_offset}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function fetchLiveState() {
+      if (window.__STATIC_SNAPSHOT_DATA__) {
+        renderDashboard(window.__STATIC_SNAPSHOT_DATA__);
+        return;
+      }
+      try {
+        const res = await fetch('/api/live-state');
+        const data = await res.json();
+        renderDashboard(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function triggerWave() {
+      await fetch('/api/publish-wave', { method: 'POST' });
+      await fetchLiveState();
+    }
+
+    async function triggerInvalid() {
+      await fetch('/api/inject-invalid', { method: 'POST' });
+      await fetchLiveState();
+    }
+
+    fetchLiveState();
+    setInterval(fetchLiveState, 2000);
+  </script>
+</body>
+</html>
