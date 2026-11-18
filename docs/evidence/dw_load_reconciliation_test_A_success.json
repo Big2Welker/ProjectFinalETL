@@ -1,6 +1,6 @@
 {
   "batch_id": "test_A_success",
-  "loaded_at_utc": "2026-10-21T14:59:17.777196+00:00",
+  "loaded_at_utc": "2026-11-18T22:08:57.235637+00:00",
   "database": "dw_calidad_agua_colombia",
   "rerun_strategy": "Transactional Delete-and-Reload in FK-safe order with Primary/Unique Key enforcement",
   "prepared_input_counts": {

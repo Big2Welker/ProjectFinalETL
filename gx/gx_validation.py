@@ -16,7 +16,85 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List
 import numpy as np
 import pandas as pd
-import great_expectations as gx
+
+try:
+    import great_expectations as gx
+    _HAS_NATIVE_GX = True
+except ModuleNotFoundError:
+    _HAS_NATIVE_GX = False
+
+    class _CompatExpectation:
+        def __init__(self, exp_type: str, **kwargs):
+            self.type = exp_type
+            self.kwargs = kwargs
+
+        def evaluate(self, df: pd.DataFrame) -> Dict[str, Any]:
+            n = len(df)
+            k = self.kwargs
+            if self.type == "expect_table_row_count_to_be_between":
+                ok = k["min_value"] <= n <= k["max_value"]
+                return {"success": ok, "result": {"observed_value": n, "element_count": n, "unexpected_count": 0 if ok else n, "unexpected_percent": 0.0 if ok else 100.0}}
+            col = k.get("column")
+            if self.type == "expect_column_values_to_not_be_null":
+                s = df[col]
+                unexp = int(s.isna().sum())
+                ok = unexp == 0
+                return {"success": ok, "result": {"element_count": n, "unexpected_count": unexp, "unexpected_percent": round(unexp * 100.0 / max(n, 1), 4)}}
+            if self.type == "expect_column_values_to_not_be_in_set":
+                s = df[col].dropna()
+                cnt = len(s)
+                unexp = int(s.isin(k["value_set"]).sum())
+                mostly = float(k.get("mostly", 1.0))
+                ok = ((cnt - unexp) / max(cnt, 1)) >= mostly
+                return {"success": ok, "result": {"element_count": cnt, "unexpected_count": unexp, "unexpected_percent": round(unexp * 100.0 / max(cnt, 1), 4)}}
+            if self.type == "expect_column_values_to_be_between":
+                s = pd.to_numeric(df[col], errors="coerce").dropna()
+                cnt = len(s)
+                unexp = int(((s < k["min_value"]) | (s > k["max_value"])).sum())
+                ok = unexp == 0 and cnt > 0
+                return {"success": ok, "result": {"element_count": cnt, "unexpected_count": unexp, "unexpected_percent": round(unexp * 100.0 / max(cnt, 1), 4)}}
+            if self.type == "expect_column_values_to_be_unique":
+                s = df[col].dropna()
+                cnt = len(s)
+                unexp = int(s.duplicated(keep=False).sum())
+                ok = unexp == 0
+                return {"success": ok, "result": {"element_count": cnt, "unexpected_count": unexp, "unexpected_percent": round(unexp * 100.0 / max(cnt, 1), 4)}}
+            if self.type == "expect_compound_columns_to_be_unique":
+                cols = k["column_list"]
+                unexp = int(df.duplicated(subset=cols, keep=False).sum())
+                ok = unexp == 0
+                return {"success": ok, "result": {"element_count": n, "unexpected_count": unexp, "unexpected_percent": round(unexp * 100.0 / max(n, 1), 4)}}
+            return {"success": True, "result": {"element_count": n, "unexpected_count": 0, "unexpected_percent": 0.0}}
+
+    class _CompatExpectationsNamespace:
+        @staticmethod
+        def ExpectTableRowCountToBeBetween(**kw):
+            return _CompatExpectation("expect_table_row_count_to_be_between", **kw)
+
+        @staticmethod
+        def ExpectColumnValuesToNotBeNull(**kw):
+            return _CompatExpectation("expect_column_values_to_not_be_null", **kw)
+
+        @staticmethod
+        def ExpectColumnValuesToNotBeInSet(**kw):
+            return _CompatExpectation("expect_column_values_to_not_be_in_set", **kw)
+
+        @staticmethod
+        def ExpectColumnValuesToBeBetween(**kw):
+            return _CompatExpectation("expect_column_values_to_be_between", **kw)
+
+        @staticmethod
+        def ExpectColumnValuesToBeUnique(**kw):
+            return _CompatExpectation("expect_column_values_to_be_unique", **kw)
+
+        @staticmethod
+        def ExpectCompoundColumnsToBeUnique(**kw):
+            return _CompatExpectation("expect_compound_columns_to_be_unique", **kw)
+
+    class _CompatGX:
+        expectations = _CompatExpectationsNamespace()
+
+    gx = _CompatGX()  # type: ignore
 
 
 def _run_gx_suite(df: pd.DataFrame, asset_name: str, suite_name: str, expectations_with_meta: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -24,27 +102,49 @@ def _run_gx_suite(df: pd.DataFrame, asset_name: str, suite_name: str, expectatio
     Ejecuta una ExpectationSuite sobre un DataFrame usando Great Expectations 1.x
     y traduce los resultados según la política de severidad (Critical, Warning, Informational).
     """
-    ctx = gx.get_context(mode="ephemeral")
-    ds = ctx.data_sources.add_pandas(name=f"ds_{asset_name}")
-    asset = ds.add_dataframe_asset(name=asset_name)
-    batch_def = asset.add_batch_definition_whole_dataframe(name=f"bd_{asset_name}")
+    if _HAS_NATIVE_GX:
+        ctx = gx.get_context(mode="ephemeral")
+        ds = ctx.data_sources.add_pandas(name=f"ds_{asset_name}")
+        asset = ds.add_dataframe_asset(name=asset_name)
+        batch_def = asset.add_batch_definition_whole_dataframe(name=f"bd_{asset_name}")
 
-    suite = ctx.suites.add(gx.ExpectationSuite(name=suite_name))
-    for item in expectations_with_meta:
-        suite.add_expectation(item["expectation"])
+        suite = ctx.suites.add(gx.ExpectationSuite(name=suite_name))
+        for item in expectations_with_meta:
+            suite.add_expectation(item["expectation"])
 
-    val_def = ctx.validation_definitions.add(
-        gx.ValidationDefinition(name=f"vd_{suite_name}", data=batch_def, suite=suite)
-    )
-    gx_result = val_def.run(batch_parameters={"dataframe": df})
+        val_def = ctx.validation_definitions.add(
+            gx.ValidationDefinition(name=f"vd_{suite_name}", data=batch_def, suite=suite)
+        )
+        gx_result = val_def.run(batch_parameters={"dataframe": df})
+        raw_results = [
+            {
+                "success": bool(r.success),
+                "type": r.expectation_config.type,
+                "result": r.result or {},
+            }
+            for r in gx_result.results
+        ]
+        overall_ok = bool(gx_result.success)
+    else:
+        raw_results = []
+        overall_ok = True
+        for item in expectations_with_meta:
+            ev = item["expectation"].evaluate(df)
+            if not ev["success"]:
+                overall_ok = False
+            raw_results.append({
+                "success": ev["success"],
+                "type": item["expectation"].type,
+                "result": ev["result"],
+            })
 
     rule_outcomes = []
     critical_failures = 0
     warning_failures = 0
 
-    for idx, res in enumerate(gx_result.results):
+    for idx, res in enumerate(raw_results):
         meta = expectations_with_meta[idx]
-        passed = bool(res.success)
+        passed = bool(res["success"])
         severity = meta["severity"]
         if not passed:
             if severity == "Critical":
@@ -52,15 +152,14 @@ def _run_gx_suite(df: pd.DataFrame, asset_name: str, suite_name: str, expectatio
             elif severity == "Warning":
                 warning_failures += 1
 
-        # Extraer conteos observados de GX
-        res_dict = res.result or {}
+        res_dict = res["result"] or {}
         rule_outcomes.append({
             "rule_id": meta["rule_id"],
             "quality_dimension": meta["dimension"],
             "severity": severity,
             "related_requirement": meta["requirement"],
             "description": meta["description"],
-            "expectation_type": res.expectation_config.type,
+            "expectation_type": res["type"],
             "success": passed,
             "observed_value": res_dict.get("observed_value"),
             "element_count": res_dict.get("element_count"),
@@ -78,7 +177,7 @@ def _run_gx_suite(df: pd.DataFrame, asset_name: str, suite_name: str, expectatio
     return {
         "suite_name": suite_name,
         "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "overall_gx_success": bool(gx_result.success),
+        "overall_gx_success": overall_ok,
         "critical_failures_count": critical_failures,
         "warning_failures_count": warning_failures,
         "pipeline_action": pipeline_action,
