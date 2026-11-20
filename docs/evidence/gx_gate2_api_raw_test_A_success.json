@@ -1,13 +1,13 @@
 {
   "gate": "API Raw Validation",
   "batch_id": "test_A_success",
-  "evaluated_at_utc": "2026-11-18T22:08:55.010158+00:00",
+  "evaluated_at_utc": "2026-11-20T15:50:50.097305+00:00",
   "critical_failures_count": 0,
   "pipeline_action": "PROCEED_NORMAL",
   "suites": {
     "departments": {
       "suite_name": "suite_api_departments_raw",
-      "evaluated_at_utc": "2026-11-18T22:08:55.009516+00:00",
+      "evaluated_at_utc": "2026-11-20T15:50:50.096111+00:00",
       "overall_gx_success": true,
       "critical_failures_count": 0,
       "warning_failures_count": 0,
@@ -56,7 +56,7 @@
     },
     "indigenous_reservations": {
       "suite_name": "suite_api_indigenous_raw",
-      "evaluated_at_utc": "2026-11-18T22:08:55.010140+00:00",
+      "evaluated_at_utc": "2026-11-20T15:50:50.097233+00:00",
       "overall_gx_success": true,
       "critical_failures_count": 0,
       "warning_failures_count": 0,
@@ -79,7 +79,7 @@
     },
     "cities": {
       "suite_name": "suite_api_cities_raw",
-      "evaluated_at_utc": "2026-11-18T22:08:55.010154+00:00",
+      "evaluated_at_utc": "2026-11-20T15:50:50.097297+00:00",
       "overall_gx_success": true,
       "critical_failures_count": 0,
       "warning_failures_count": 0,

@@ -1,13 +1,13 @@
 {
   "gate": "Prepared Data Validation",
   "batch_id": "test_B_critical_failure",
-  "evaluated_at_utc": "2026-11-18T22:08:59.518030+00:00",
+  "evaluated_at_utc": "2026-11-20T15:50:53.626054+00:00",
   "critical_failures_count": 1,
   "pipeline_action": "BLOCK_DW_LOAD_CRITICAL_FAILURE",
   "suites": {
     "fact_irca": {
       "suite_name": "suite_prepared_fact_irca",
-      "evaluated_at_utc": "2026-11-18T22:08:59.517142+00:00",
+      "evaluated_at_utc": "2026-11-20T15:50:53.624977+00:00",
       "overall_gx_success": false,
       "critical_failures_count": 1,
       "warning_failures_count": 0,
@@ -69,7 +69,7 @@
     },
     "dim_geografia": {
       "suite_name": "suite_prepared_dim_geografia",
-      "evaluated_at_utc": "2026-11-18T22:08:59.518020+00:00",
+      "evaluated_at_utc": "2026-11-20T15:50:53.626038+00:00",
       "overall_gx_success": true,
       "critical_failures_count": 0,
       "warning_failures_count": 0,

@@ -1,7 +1,7 @@
 {
-  "executed_at_utc": "2026-11-18T22:09:44.434206+00:00",
+  "executed_at_utc": "2026-11-20T15:51:26.809623+00:00",
   "kafka_topic": "irca.water.telemetry.v1",
-  "consumer_group_id": "cg_irca_final_delivery_f48737b0",
+  "consumer_group_id": "cg_irca_final_delivery_f03a9cef",
   "experiment_1_normal_and_suppression": {
     "producer_stats": {
       "evaluated_rows": 75,
@@ -12,7 +12,7 @@
       "session_valid_count": 60,
       "session_rejected_count": 0,
       "latest_snapshot": {
-        "updated_at_utc": "2026-11-18T22:09:24.084375+00:00",
+        "updated_at_utc": "2026-11-20T15:51:06.332941+00:00",
         "total_valid_events": 60,
         "total_rejected_events": 0,
         "rolling_avg_irca_general": 55.43,
@@ -29,7 +29,7 @@
     },
     "dashboard_snapshot_T1": {
       "metric_snapshot_id": 60,
-      "updated_at_utc": "2026-11-18T22:09:24.084375+00:00",
+      "updated_at_utc": "2026-11-20T15:51:06.332941+00:00",
       "total_valid_events": 60,
       "total_rejected_events": 0,
       "rolling_avg_irca_general": 55.43,
@@ -50,62 +50,62 @@
     "injected_invalid_cases": [
       {
         "case": "DOMAIN_VIOLATION_IRCA_RANGE (irca_general=165.0)",
-        "event_id": "e8eea538-07c5-4f49-9bfb-ce6989990a73",
+        "event_id": "0d7c3e84-eb25-4609-9908-ac76daeca76a",
         "partition": 1,
-        "offset": 21
+        "offset": 101
       },
       {
         "case": "MISSING_REQUIRED_FIELD (codigo_municipio=None)",
-        "event_id": "f8a6c962-1ec1-45e7-a3d0-b869337351fc",
+        "event_id": "6f755b3b-1030-46c5-9e40-abf18e5d4a98",
         "partition": 1,
-        "offset": 22
+        "offset": 102
       },
       {
         "case": "MALFORMED_JSON_PAYLOAD (corrupt syntax)",
         "event_id": "N/A (raw bytes)",
         "partition": 2,
-        "offset": 18
+        "offset": 100
       }
     ],
     "observed_behavior": "Consumer validated each message against EVENT_CONTRACT_SPEC, caught all 3 violations (DOMAIN_VIOLATION_IRCA_RANGE, MISSING_REQUIRED_FIELD, MALFORMED_JSON_PAYLOAD), persisted them into stream_dlq_invalid_events, incremented total_rejected_events=3, and continued processing subsequent valid events without crashing or polluting metrics.",
     "dlq_records_persisted": [
       {
         "dlq_id": 1,
-        "rejected_at_utc": "2026-11-18T22:09:30.479288+00:00",
-        "event_id": "e8eea538-07c5-4f49-9bfb-ce6989990a73",
+        "rejected_at_utc": "2026-11-20T15:51:12.696921+00:00",
+        "event_id": "0d7c3e84-eb25-4609-9908-ac76daeca76a",
         "event_key": "27073",
         "violation_code": "DOMAIN_VIOLATION_IRCA_RANGE",
         "violation_detail": "irca_general=165.0 violates physical range [0.0, 100.0].",
-        "raw_payload": "{\"event_id\": \"e8eea538-07c5-4f49-9bfb-ce6989990a73\", \"event_timestamp\": \"2026-11-18T22:09:30.281259+00:00\", \"event_key\": \"27073\", \"event_type\": \"CRITICAL_RISK_SPIKE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": \"27073\", \"municipio\": \"BAGAD\\u00d3\", \"departamento\": \"CHOC\\u00d3\", \"region_geografica\": \"PAC\\u00cdFICO\", \"anio_referencia\": 2024, \"irca_general\": 165.0, \"irca_urbano\": 85.0, \"irca_rural\": 100.0, \"delta_irca_prev\": 65.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 553519}",
+        "raw_payload": "{\"event_id\": \"0d7c3e84-eb25-4609-9908-ac76daeca76a\", \"event_timestamp\": \"2026-11-20T15:51:12.526378+00:00\", \"event_key\": \"27073\", \"event_type\": \"CRITICAL_RISK_SPIKE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": \"27073\", \"municipio\": \"BAGAD\\u00d3\", \"departamento\": \"CHOC\\u00d3\", \"region_geografica\": \"PAC\\u00cdFICO\", \"anio_referencia\": 2024, \"irca_general\": 165.0, \"irca_urbano\": 85.0, \"irca_rural\": 100.0, \"delta_irca_prev\": 65.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 553519}",
         "kafka_partition": 1,
-        "kafka_offset": 21
+        "kafka_offset": 101
       },
       {
         "dlq_id": 2,
-        "rejected_at_utc": "2026-11-18T22:09:30.496226+00:00",
-        "event_id": "f8a6c962-1ec1-45e7-a3d0-b869337351fc",
+        "rejected_at_utc": "2026-11-20T15:51:12.712628+00:00",
+        "event_id": "6f755b3b-1030-46c5-9e40-abf18e5d4a98",
         "event_key": "05895",
         "violation_code": "MISSING_REQUIRED_FIELD",
         "violation_detail": "Required field 'codigo_municipio' is missing or null.",
-        "raw_payload": "{\"event_id\": \"f8a6c962-1ec1-45e7-a3d0-b869337351fc\", \"event_timestamp\": \"2026-11-18T22:09:30.329289+00:00\", \"event_key\": \"05895\", \"event_type\": \"DELTA_METRIC_UPDATE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": null, \"municipio\": \"ZARAGOZA\", \"departamento\": \"ANTIOQUIA\", \"region_geografica\": \"ANDINA\", \"anio_referencia\": 2024, \"irca_general\": 96.5, \"delta_irca_prev\": 12.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 6887306}",
+        "raw_payload": "{\"event_id\": \"6f755b3b-1030-46c5-9e40-abf18e5d4a98\", \"event_timestamp\": \"2026-11-20T15:51:12.572694+00:00\", \"event_key\": \"05895\", \"event_type\": \"DELTA_METRIC_UPDATE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": null, \"municipio\": \"ZARAGOZA\", \"departamento\": \"ANTIOQUIA\", \"region_geografica\": \"ANDINA\", \"anio_referencia\": 2024, \"irca_general\": 96.5, \"delta_irca_prev\": 12.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 6887306}",
         "kafka_partition": 1,
-        "kafka_offset": 22
+        "kafka_offset": 102
       },
       {
         "dlq_id": 3,
-        "rejected_at_utc": "2026-11-18T22:09:30.511961+00:00",
+        "rejected_at_utc": "2026-11-20T15:51:12.727974+00:00",
         "event_id": null,
         "event_key": null,
         "violation_code": "MALFORMED_JSON_PAYLOAD",
         "violation_detail": "Failed to decode JSON payload: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
         "raw_payload": "{corrupt_json_payload: irca_general=NaN, broken_syntax",
         "kafka_partition": 2,
-        "kafka_offset": 18
+        "kafka_offset": 100
       }
     ],
     "kpi_snapshot_after_invalid": {
       "metric_snapshot_id": 65,
-      "updated_at_utc": "2026-11-18T22:09:30.609513+00:00",
+      "updated_at_utc": "2026-11-20T15:51:12.822932+00:00",
       "total_valid_events": 65,
       "total_rejected_events": 3,
       "rolling_avg_irca_general": 52.64,
@@ -123,14 +123,14 @@
     }
   },
   "experiment_3_consumer_interruption_and_resume": {
-    "consumer_stopped_at_utc": "2026-11-18T22:09:36.846124+00:00",
+    "consumer_stopped_at_utc": "2026-11-20T15:51:19.059191+00:00",
     "events_published_while_consumer_offline": 55,
     "events_recovered_upon_restart": 55,
     "zero_data_loss_verified": true,
     "observed_behavior": "While the consumer was stopped, Kafka retained all newly published events on disk across partitions. When the consumer restarted under the same group_id, it resumed from the exact committed offset, processed 100% of queued events, and updated the Real-Time Metrics Store.",
     "dashboard_snapshot_T2_final": {
       "metric_snapshot_id": 120,
-      "updated_at_utc": "2026-11-18T22:09:38.220081+00:00",
+      "updated_at_utc": "2026-11-20T15:51:20.630091+00:00",
       "total_valid_events": 120,
       "total_rejected_events": 3,
       "rolling_avg_irca_general": 34.62,
@@ -148,10 +148,10 @@
     }
   },
   "final_dashboard_state": {
-    "captured_at_utc": "2026-11-18T22:09:44.433242+00:00",
+    "captured_at_utc": "2026-11-20T15:51:26.808679+00:00",
     "kpi_snapshot": {
       "metric_snapshot_id": 120,
-      "updated_at_utc": "2026-11-18T22:09:38.220081+00:00",
+      "updated_at_utc": "2026-11-20T15:51:20.630091+00:00",
       "total_valid_events": 120,
       "total_rejected_events": 3,
       "rolling_avg_irca_general": 34.62,
@@ -176,7 +176,7 @@
         "max_irca_recorded": 89.8,
         "critical_alerts_count": 32,
         "indigenous_alerts_count": 1,
-        "updated_at_utc": "2026-11-18T22:09:38.220081+00:00"
+        "updated_at_utc": "2026-11-20T15:51:20.630091+00:00"
       },
       {
         "region_geografica": "AMAZONÍA",
@@ -186,7 +186,7 @@
         "max_irca_recorded": 96.6,
         "critical_alerts_count": 7,
         "indigenous_alerts_count": 6,
-        "updated_at_utc": "2026-11-18T22:09:38.220081+00:00"
+        "updated_at_utc": "2026-11-20T15:51:20.630091+00:00"
       },
       {
         "region_geografica": "ORINOQUÍA",
@@ -196,7 +196,7 @@
         "max_irca_recorded": 61.0,
         "critical_alerts_count": 3,
         "indigenous_alerts_count": 2,
-        "updated_at_utc": "2026-11-18T22:09:38.220081+00:00"
+        "updated_at_utc": "2026-11-20T15:51:20.630091+00:00"
       },
       {
         "region_geografica": "PACÍFICO",
@@ -206,7 +206,7 @@
         "max_irca_recorded": 84.6,
         "critical_alerts_count": 21,
         "indigenous_alerts_count": 9,
-        "updated_at_utc": "2026-11-18T22:09:38.220081+00:00"
+        "updated_at_utc": "2026-11-20T15:51:20.630091+00:00"
       },
       {
         "region_geografica": "ANDINA",
@@ -216,13 +216,13 @@
         "max_irca_recorded": 89.4,
         "critical_alerts_count": 27,
         "indigenous_alerts_count": 4,
-        "updated_at_utc": "2026-11-18T22:09:38.220081+00:00"
+        "updated_at_utc": "2026-11-20T15:51:20.630091+00:00"
       }
     ],
     "recent_events": [
       {
-        "event_id": "bdad503c-c75e-4bc1-afd2-9b53600e2c41",
-        "event_timestamp": "2026-11-18T22:09:37.189429+00:00",
+        "event_id": "ad0f72a5-06d2-42e2-ab82-131da9a68ec2",
+        "event_timestamp": "2026-11-20T15:51:19.398831+00:00",
         "codigo_municipio": "76126",
         "municipio": "CALIMA",
         "departamento": "VALLE DEL CAUCA",
@@ -234,11 +234,11 @@
         "tiene_resguardo_indigena": 1,
         "total_resguardos_indigenas": 1,
         "kafka_partition": 2,
-        "kafka_offset": 39
+        "kafka_offset": 121
       },
       {
-        "event_id": "01ffb5ed-e535-4c26-b928-91f7d2d368bd",
-        "event_timestamp": "2026-11-18T22:09:37.149818+00:00",
+        "event_id": "6cab6c55-5d91-47e2-94b4-54cc9864bb82",
+        "event_timestamp": "2026-11-20T15:51:19.360056+00:00",
         "codigo_municipio": "15224",
         "municipio": "CUCAITA",
         "departamento": "BOYACÁ",
@@ -250,11 +250,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 38
+        "kafka_offset": 120
       },
       {
-        "event_id": "9ccd45d3-445e-4b16-a670-9ab5df148878",
-        "event_timestamp": "2026-11-18T22:09:37.144325+00:00",
+        "event_id": "66fa35f7-5e75-430e-aa6d-2f9d7e60140e",
+        "event_timestamp": "2026-11-20T15:51:19.354367+00:00",
         "codigo_municipio": "5240",
         "municipio": "EBÉJICO",
         "departamento": "ANTIOQUIA",
@@ -266,11 +266,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 37
+        "kafka_offset": 119
       },
       {
-        "event_id": "1236241e-fa92-4982-b994-659006ac2e1a",
-        "event_timestamp": "2026-11-18T22:09:37.132971+00:00",
+        "event_id": "ae78f50e-462c-416f-903b-fc4873610bee",
+        "event_timestamp": "2026-11-20T15:51:19.343267+00:00",
         "codigo_municipio": "68147",
         "municipio": "CAPITANEJO",
         "departamento": "SANTANDER",
@@ -282,11 +282,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 36
+        "kafka_offset": 118
       },
       {
-        "event_id": "e0ed16e6-287d-41f3-b89e-234628d1231b",
-        "event_timestamp": "2026-11-18T22:09:37.116097+00:00",
+        "event_id": "237d8cfc-6b61-4657-ab79-1252289f6da6",
+        "event_timestamp": "2026-11-20T15:51:19.326820+00:00",
         "codigo_municipio": "52356",
         "municipio": "IPIALES",
         "departamento": "NARIÑO",
@@ -298,11 +298,11 @@
         "tiene_resguardo_indigena": 1,
         "total_resguardos_indigenas": 5,
         "kafka_partition": 2,
-        "kafka_offset": 35
+        "kafka_offset": 117
       },
       {
-        "event_id": "8787f589-b9e4-4298-ab96-71e80d02fa97",
-        "event_timestamp": "2026-11-18T22:09:37.104597+00:00",
+        "event_id": "74b02b2c-0789-47d7-9acc-aea1886a4872",
+        "event_timestamp": "2026-11-20T15:51:19.315339+00:00",
         "codigo_municipio": "15810",
         "municipio": "TIPACOQUE",
         "departamento": "BOYACÁ",
@@ -314,11 +314,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 34
+        "kafka_offset": 116
       },
       {
-        "event_id": "c26bca06-f193-4fe8-9725-28c5187b5618",
-        "event_timestamp": "2026-11-18T22:09:37.098720+00:00",
+        "event_id": "3cc22336-ae6f-4ec1-9afe-e1dfa824c9de",
+        "event_timestamp": "2026-11-20T15:51:19.309779+00:00",
         "codigo_municipio": "5809",
         "municipio": "TITIRIBÍ",
         "departamento": "ANTIOQUIA",
@@ -330,11 +330,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 33
+        "kafka_offset": 115
       },
       {
-        "event_id": "921897bd-e5c1-46f6-94e7-233f5697b74d",
-        "event_timestamp": "2026-11-18T22:09:37.092929+00:00",
+        "event_id": "95063d7e-85f9-4dd2-a39a-3fa1e0e99ee4",
+        "event_timestamp": "2026-11-20T15:51:19.304124+00:00",
         "codigo_municipio": "18785",
         "municipio": "SOLITA",
         "departamento": "CAQUETÁ",
@@ -346,11 +346,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 32
+        "kafka_offset": 114
       },
       {
-        "event_id": "9dec7afe-04dc-4e05-998a-c3ae7eca0442",
-        "event_timestamp": "2026-11-18T22:09:37.081859+00:00",
+        "event_id": "ab8c911a-e0be-4a9f-b09d-0e5ae67e7358",
+        "event_timestamp": "2026-11-20T15:51:19.293124+00:00",
         "codigo_municipio": "68250",
         "municipio": "EL PEÑÓN",
         "departamento": "SANTANDER",
@@ -362,11 +362,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 31
+        "kafka_offset": 113
       },
       {
-        "event_id": "62735f0e-d290-47e4-a3cd-2ad58d6917b1",
-        "event_timestamp": "2026-11-18T22:09:37.076384+00:00",
+        "event_id": "2861ce16-fd86-48f9-8278-c072ad3251cb",
+        "event_timestamp": "2026-11-20T15:51:19.287462+00:00",
         "codigo_municipio": "15212",
         "municipio": "COPER",
         "departamento": "BOYACÁ",
@@ -378,11 +378,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 30
+        "kafka_offset": 112
       },
       {
-        "event_id": "6394aaf2-29f8-4ffc-9f98-ea73145cf2d8",
-        "event_timestamp": "2026-11-18T22:09:37.047603+00:00",
+        "event_id": "6d96ca34-9ed3-4209-b3c6-d2159a5fff42",
+        "event_timestamp": "2026-11-20T15:51:19.259439+00:00",
         "codigo_municipio": "15480",
         "municipio": "MUZO",
         "departamento": "BOYACÁ",
@@ -394,11 +394,11 @@
         "tiene_resguardo_indigena": 0,
         "total_resguardos_indigenas": 0,
         "kafka_partition": 2,
-        "kafka_offset": 29
+        "kafka_offset": 111
       },
       {
-        "event_id": "235589c7-488e-436d-be0d-5e3b9d255c88",
-        "event_timestamp": "2026-11-18T22:09:37.036443+00:00",
+        "event_id": "3616713a-9922-49ae-8268-6154ba46391d",
+        "event_timestamp": "2026-11-20T15:51:19.248365+00:00",
         "codigo_municipio": "97001",
         "municipio": "MITÚ",
         "departamento": "VAUPÉS",
@@ -410,42 +410,42 @@
         "tiene_resguardo_indigena": 1,
         "total_resguardos_indigenas": 2,
         "kafka_partition": 2,
-        "kafka_offset": 28
+        "kafka_offset": 110
       }
     ],
     "dlq_invalid_events": [
       {
         "dlq_id": 1,
-        "rejected_at_utc": "2026-11-18T22:09:30.479288+00:00",
-        "event_id": "e8eea538-07c5-4f49-9bfb-ce6989990a73",
+        "rejected_at_utc": "2026-11-20T15:51:12.696921+00:00",
+        "event_id": "0d7c3e84-eb25-4609-9908-ac76daeca76a",
         "event_key": "27073",
         "violation_code": "DOMAIN_VIOLATION_IRCA_RANGE",
         "violation_detail": "irca_general=165.0 violates physical range [0.0, 100.0].",
-        "raw_payload": "{\"event_id\": \"e8eea538-07c5-4f49-9bfb-ce6989990a73\", \"event_timestamp\": \"2026-11-18T22:09:30.281259+00:00\", \"event_key\": \"27073\", \"event_type\": \"CRITICAL_RISK_SPIKE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": \"27073\", \"municipio\": \"BAGAD\\u00d3\", \"departamento\": \"CHOC\\u00d3\", \"region_geografica\": \"PAC\\u00cdFICO\", \"anio_referencia\": 2024, \"irca_general\": 165.0, \"irca_urbano\": 85.0, \"irca_rural\": 100.0, \"delta_irca_prev\": 65.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 553519}",
+        "raw_payload": "{\"event_id\": \"0d7c3e84-eb25-4609-9908-ac76daeca76a\", \"event_timestamp\": \"2026-11-20T15:51:12.526378+00:00\", \"event_key\": \"27073\", \"event_type\": \"CRITICAL_RISK_SPIKE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": \"27073\", \"municipio\": \"BAGAD\\u00d3\", \"departamento\": \"CHOC\\u00d3\", \"region_geografica\": \"PAC\\u00cdFICO\", \"anio_referencia\": 2024, \"irca_general\": 165.0, \"irca_urbano\": 85.0, \"irca_rural\": 100.0, \"delta_irca_prev\": 65.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 553519}",
         "kafka_partition": 1,
-        "kafka_offset": 21
+        "kafka_offset": 101
       },
       {
         "dlq_id": 2,
-        "rejected_at_utc": "2026-11-18T22:09:30.496226+00:00",
-        "event_id": "f8a6c962-1ec1-45e7-a3d0-b869337351fc",
+        "rejected_at_utc": "2026-11-20T15:51:12.712628+00:00",
+        "event_id": "6f755b3b-1030-46c5-9e40-abf18e5d4a98",
         "event_key": "05895",
         "violation_code": "MISSING_REQUIRED_FIELD",
         "violation_detail": "Required field 'codigo_municipio' is missing or null.",
-        "raw_payload": "{\"event_id\": \"f8a6c962-1ec1-45e7-a3d0-b869337351fc\", \"event_timestamp\": \"2026-11-18T22:09:30.329289+00:00\", \"event_key\": \"05895\", \"event_type\": \"DELTA_METRIC_UPDATE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": null, \"municipio\": \"ZARAGOZA\", \"departamento\": \"ANTIOQUIA\", \"region_geografica\": \"ANDINA\", \"anio_referencia\": 2024, \"irca_general\": 96.5, \"delta_irca_prev\": 12.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 6887306}",
+        "raw_payload": "{\"event_id\": \"6f755b3b-1030-46c5-9e40-abf18e5d4a98\", \"event_timestamp\": \"2026-11-20T15:51:12.572694+00:00\", \"event_key\": \"05895\", \"event_type\": \"DELTA_METRIC_UPDATE\", \"simulation_mode\": \"HISTORICAL_REPLAY_SIMULATION\", \"codigo_municipio\": null, \"municipio\": \"ZARAGOZA\", \"departamento\": \"ANTIOQUIA\", \"region_geografica\": \"ANDINA\", \"anio_referencia\": 2024, \"irca_general\": 96.5, \"delta_irca_prev\": 12.0, \"nivel_riesgo\": \"INVIABLE SANITARIAMENTE\", \"tiene_resguardo_indigena\": 1, \"total_resguardos_indigenas\": 4, \"poblacion_depto_api\": 6887306}",
         "kafka_partition": 1,
-        "kafka_offset": 22
+        "kafka_offset": 102
       },
       {
         "dlq_id": 3,
-        "rejected_at_utc": "2026-11-18T22:09:30.511961+00:00",
+        "rejected_at_utc": "2026-11-20T15:51:12.727974+00:00",
         "event_id": null,
         "event_key": null,
         "violation_code": "MALFORMED_JSON_PAYLOAD",
         "violation_detail": "Failed to decode JSON payload: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
         "raw_payload": "{corrupt_json_payload: irca_general=NaN, broken_syntax",
         "kafka_partition": 2,
-        "kafka_offset": 18
+        "kafka_offset": 100
       }
     ]
   }

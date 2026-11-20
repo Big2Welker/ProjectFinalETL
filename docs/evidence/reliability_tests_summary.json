@@ -1,7 +1,7 @@
 {
   "Test_A_Successful_Run": {
     "batch_id": "test_A_success",
-    "started_at_utc": "2026-11-18T22:08:38.428057+00:00",
+    "started_at_utc": "2026-11-20T15:50:48.732294+00:00",
     "inject_critical_failure": false,
     "task_states": {
       "extract_primary": "success",
@@ -15,7 +15,7 @@
     "error_message": null,
     "reconciliation": {
       "batch_id": "test_A_success",
-      "loaded_at_utc": "2026-11-18T22:08:57.235637+00:00",
+      "loaded_at_utc": "2026-11-20T15:50:52.088027+00:00",
       "database": "dw_calidad_agua_colombia",
       "rerun_strategy": "Transactional Delete-and-Reload in FK-safe order with Primary/Unique Key enforcement",
       "prepared_input_counts": {
@@ -41,11 +41,11 @@
       },
       "reconciliation_passed": true
     },
-    "completed_at_utc": "2026-11-18T22:08:57.265586+00:00"
+    "completed_at_utc": "2026-11-20T15:50:52.107470+00:00"
   },
   "Test_B_Controlled_Critical_Quality_Failure": {
     "batch_id": "test_B_critical_failure",
-    "started_at_utc": "2026-11-18T22:08:57.265639+00:00",
+    "started_at_utc": "2026-11-20T15:50:52.107660+00:00",
     "inject_critical_failure": true,
     "task_states": {
       "extract_primary": "success",
@@ -58,11 +58,11 @@
     },
     "error_message": "[GX GATE 3 CRITICAL FAILURE] Se detectaron 1 violaciones críticas en datos preparados. Carga al Data Warehouse BLOQUEADA según política de severidad. Evidencia: C:\\ETL\\ProyectosEtl\\Proyecto3\\docs\\evidence\\gx_gate3_prepared_test_B_critical_failure.json",
     "reconciliation": null,
-    "completed_at_utc": "2026-11-18T22:08:59.525223+00:00"
+    "completed_at_utc": "2026-11-20T15:50:53.628673+00:00"
   },
   "Test_C_Safe_Rerun_And_Repeatability": {
     "batch_id": "test_C_safe_rerun",
-    "started_at_utc": "2026-11-18T22:08:59.525274+00:00",
+    "started_at_utc": "2026-11-20T15:50:53.628878+00:00",
     "inject_critical_failure": false,
     "task_states": {
       "extract_primary": "success",
@@ -76,7 +76,7 @@
     "error_message": null,
     "reconciliation": {
       "batch_id": "test_C_safe_rerun",
-      "loaded_at_utc": "2026-11-18T22:09:18.773841+00:00",
+      "loaded_at_utc": "2026-11-20T15:50:56.250098+00:00",
       "database": "dw_calidad_agua_colombia",
       "rerun_strategy": "Transactional Delete-and-Reload in FK-safe order with Primary/Unique Key enforcement",
       "prepared_input_counts": {
@@ -102,7 +102,7 @@
       },
       "reconciliation_passed": true
     },
-    "completed_at_utc": "2026-11-18T22:09:18.785242+00:00"
+    "completed_at_utc": "2026-11-20T15:50:56.257612+00:00"
   },
   "Streaming_Pipeline_And_Experiments": {
     "kafka_topic": "irca.water.telemetry.v1",

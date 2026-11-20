@@ -29,3 +29,8 @@ docs/dashboard/*.Report/
 docs/dashboard/*.SemanticModel/
 src/build_dashboard_pbip.py
 notebooks/build_notebook.py
+
+# 6. Local presentations and speaker scripts (keep local only)
+*.pptx
+docs/presentacion*
+docs/guion*
